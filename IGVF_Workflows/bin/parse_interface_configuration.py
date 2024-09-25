@@ -117,11 +117,6 @@ def generate_config_files(config_table_path, output_dir, mapping_tabs):
 
     covariate_list = covariate_list.rstrip(',\n') + '\n]'
 
-    # Write covariate config
-    covariate_file_path = os.path.join(output_dir, 'test3.config')
-    with open(covariate_file_path, 'w') as file:
-        file.write(covariate_list)
-
     # Combine all config sections inside params
     config_sequences_combined = ''.join([f'{config}\n    ' for config in config_sequences.values()])
     test_fastq_configs_combined = '\n\n    '.join(test_fastq_configs)
