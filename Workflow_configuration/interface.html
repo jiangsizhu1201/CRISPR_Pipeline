@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Configuration Pipeline Interface</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+    <h1>Configuration Pipeline Interface</h1>
+    <button id="export-config-button" onclick="exportConfig()">Export Configuration</button>
+</header>
+
+<div class="tab-container">
+    <!-- Tab Buttons -->
+    <div class="tab-buttons">
+        <button class="tab-button active" onclick="openTab(event, 'GeneralConfig')">General Config</button>
+        <button class="tab-button" onclick="openTab(event, 'scRNA')">scRNA</button>
+        <button class="tab-button" onclick="openTab(event, 'Guides')">Guides</button>
+        <button class="tab-button" onclick="openTab(event, 'Hash')">Hash</button>
+        <button class="tab-button" onclick="openTab(event, 'CellGuideAssignment')">Cell Guide Assignment</button>
+        <button class="tab-button" onclick="openTab(event, 'PerturbationInference')">Perturbation Inference</button>
+        <button class="tab-button" onclick="openTab(event, 'InferencePairs')">Inference Pairs</button>
+        <button class="tab-button" onclick="openTab(event, 'QualityFilters')">Quality Filters</button>
+        <button class="tab-button" onclick="openTab(event, 'Evaluation')">Evaluation</button>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content-container">
+        <!-- General Config Tab -->
+        <div id="GeneralConfig" class="tab-content active">
+            <div class="section">
+                <h3>General Configuration</h3>
+                <div class="settings-group">
+                    <label for="run_name">Run Name (string):</label>
+                    <p class="description">Create a name for this pipeline Run.</p> <!-- Description added -->
+                    <input type="text" id="run_name" name="run_name">
+                </div>
+                <div class="settings-group">
+                    <label for="run_description">Run Description (string):</label>
+                    <p class="description">Create a Description for this pipeline Run (e.g., Testing the effect of enhancer depletion on GM12878 cells using a low MOI setup).</p>
+                    <input type="text" id="run_description" name="run_description">
+                </div>
+                <div class="settings-group">
+                    <label for="transcriptome">Transcriptome (option):</label>
+                    <p class="description">Select the transcriptome used to align your reads and extract mitochondrial genes. Kallisto will use this information to download a transcriptome index reference, and mitochondrial genes will be subselected using the selected reference (e.g., human).</p>
+                    <select id="transcriptome" name="transcriptome">
+                        <option value="human" selected>human</option>
+                        <option value="mouse">mouse</option>
+                        <option value="custom">custom</option>
+                    </select>
+                </div>
+                <div class="settings-group">
+                    <label for="seqspecs_directory">SeqSpecs Directory (string):</label>
+                    <p class="description">Path to the directory containing all the SeqSpec files (for the transcriptome, guides, and hashing cases specified). The path should include the whitelist file specified in the SeqSpec document.</p>
+                    <input type="text" id="seqspecs_directory" name="seqspecs_directory">
+                </div>
+                <div class="settings-group">
+                    <label for="genome_download_path">Genome Download Path (string):</label>
+                    <p class="description">This direct URL link for a genome file to be dowloaded. This link should contain a *.fa.gz file. The default path is <i>https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.gz</i> </p>
+                    <input type="text" id="genome_download_path" name="genome_download_path" value="https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.gz">
+                </div>
+                <div class="settings-group">
+                    <label for="genome_local_path">Genome Local Path (string):</label>
+                    <p class="description">Specify a path for a local genome file.</p>
+                    <input type="text" id="genome_local_path" name="genome_local_path">
+                </div>
+            </div>
+        </div>
+
+        <!-- scRNA Tab -->
+        <div id="scRNA" class="tab-content">
+            <div id="scRNA-batches">
+                <!-- Batches will be added here -->
+            </div>
+            <button class="add-button" onclick="addBatch('scRNA')">Add Batch</button>
+
+            <!-- Seqspec YAML File -->
+            <div class="section">
+                <h3>Seqspec YAML File</h3>
+                <p class="description">The name of the YAML file containing the read specification for the transcriptome.</p>
+                <div class="input-group">
+                    <input type="text" id="scRNA-seqspec-yaml" placeholder="Enter Seqspec YAML file name..." name="scRNA_seqspec_yaml">
+                </div>
+            </div>
+
+            <!-- GTF URL -->
+            <div class="section">
+                <h3>GTF URL</h3>
+                <div class="settings-group">
+                    <label for="gtf_url">gtf_url (URL):</label>
+                    <p class="description">GTF file used to capture the distance between genes and guides. This is the same version used to create the Kallisto transcriptome index. Make sure to use gene names that are compatible with this file when manually defining tested pairs during the perturbation inference step. <br>
+                        The default path is <i>https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_46/gencode.v46.annotation.gtf.gz.</i>
+                    </p>
+                    <input type="url" id="gtf_url" name="gtf_url" value="https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_46/gencode.v46.annotation.gtf.gz">
+                </div>
+            </div>
+        </div>
+
+        <!-- Guides Tab -->
+        <div id="Guides" class="tab-content">
+            <div id="Guides-batches">
+                <!-- Batches will be added here -->
+            </div>
+            <button class="add-button" onclick="addBatch('Guides')">Add Batch</button>
+
+            <!-- Seqspec YAML File -->
+            <div class="section">
+                <h3>Seqspec YAML File</h3>
+                <p class="description">The name of the YAML file containing the read specification for the guide.</p>
+                <div class="input-group">
+                    <input type="text" id="Guides-seqspec-yaml" placeholder="Enter Seqspec YAML file name..." name="Guides_seqspec_yaml">
+                </div>
+            </div>
+
+            <!-- Upload Table Section -->
+            <div class="section">
+                <h3>Load Guides Table</h3>
+                <div class="upload-buttons">
+                    <input type="file" id="guides-file-input" accept=".csv,.tsv">
+                    <button onclick="loadFile('Guides')">Load File</button>
+                    <button onclick="togglePasteArea('Guides')">Paste Data</button>
+                    <button onclick="exportTable('guides-table')">Export Table</button>
+                </div>
+                <textarea id="Guides-paste-area" placeholder="Paste data here (from Excel)" style="display:none;"></textarea>
+                <button id="Guides-parse-paste-button" onclick="parsePastedData('Guides')" style="display:none;">Parse Pasted Data</button>
+                <div class="table-container">
+                    <div style="float: right;">Row: <span id="guides-row-count">0</span></div>
+                    <table id="guides-table">
+                        <thead>
+                            <tr>
+                                <th>sgRNA_ID</th>
+                                <th>sgRNA_sequences</th>
+                                <th>Target_name</th>
+                                <th>chr</th>
+                                <th>start</th>
+                                <th>end</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Table rows will be added here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hash Tab -->
+        <div id="Hash" class="tab-content">
+            <div id="Hash-batches">
+                <!-- Batches will be added here -->
+            </div>
+            <button class="add-button" onclick="addBatch('Hash')">Add Batch</button>
+
+            <!-- Seqspec YAML File -->
+            <div class="section">
+                <h3>Seqspec YAML File</h3>
+                <p class="description">The name of the YAML file containing the read specification for the HTO.</p>
+                <div class="input-group">
+                    <input type="text" id="Hash-seqspec-yaml" placeholder="Enter Seqspec YAML file name..." name="Hash_seqspec_yaml">
+                </div>
+            </div>
+
+            <!-- Upload Table Section -->
+            <div class="section">
+                <h3>Load HTO_ID and Sequence Table</h3>
+                <div class="upload-buttons">
+                    <input type="file" id="hash-file-input" accept=".csv,.tsv">
+                    <button onclick="loadFile('Hash')">Load File</button>
+                    <button onclick="togglePasteArea('Hash')">Paste Data</button>
+                    <button onclick="exportTable('hash-table')">Export Table</button>
+                </div>
+                <textarea id="Hash-paste-area" placeholder="Paste data here (from Excel)" style="display:none;"></textarea>
+                <button id="Hash-parse-paste-button" onclick="parsePastedData('Hash')" style="display:none;">Parse Pasted Data</button>
+                <div class="table-container">
+                    <div style="float: right;">Row: <span id="hash-row-count">0</span></div>
+                    <table id="hash-table">
+                        <thead>
+                            <tr>
+                                <th>HTO_ID</th>
+                                <th>HTO_sequences</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Table rows will be added here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cell Guide Assignment Tab -->
+        <div id="CellGuideAssignment" class="tab-content">
+            <div class="section">
+                <h3>Cell Guide Assignment Settings</h3>
+                <div class="settings-group">
+                    <label for="assignment_method">assignment_method:</label>
+                    <p class="description">The CRISPR-Perturb-Seq pipeline offers two methods to assign guides to cells. (Cleanser and Sceptre). Please check the links : <i>https://github.com/siyansusan/CLEANSER</i> and <i>https://timothy-barry.github.io/sceptre-book/assign-grnas.html</i> to understand details of their specific implementations.</p>
+                    <select id="assignment_method" name="assignment_method" onchange="toggleFields()">
+                        <option value="sceptre" selected>sceptre</option>
+                        <option value="cleanser">cleanser</option>
+                    </select>
+                </div>
+                <div class="settings-group">
+                    <label for="THRESHOLD">THRESHOLD (int):</label>
+                    <p class="description">Cleanser guide assignment parameter (Threshold): This will use a simple minimal number of guides counts to define if a cell contains a guide or not.</p>
+                    <input type="number" id="THRESHOLD" name="THRESHOLD" value="1">
+                </div>
+            </div>
+        </div>
+
+        <!-- Perturbation Inference Tab -->
+        <div id="PerturbationInference" class="tab-content">
+            <div class="section">
+                <h3>Perturbation Inference Settings</h3>
+                <div class="settings-group">
+                    <label for="inference_method">inference_method:</label>
+                    <p class="description">Two methods are provided for inference of the differential perturbation: Sceptre (Recommended to small scale experiments) and Perturbo (all x all  in trans analysis).</p>
+                    <select id="inference_method" name="inference_method" onchange="toggleFields()">
+                        <option value="sceptre" selected>sceptre</option>
+                        <option value="perturbo">perturbo</option>
+                    </select>
+                </div>
+                <div class="settings-group">
+                    <label for="moi">moi:</label>
+                    <p class="description">
+                        From the Sceptre Manual: moi specifies the multiplicity-of-infection (MOI) of the data, taking values "high" or "low." In a high-MOI dataset, the experiment targets the insertion of multiple gRNAs per cell, while in a low-MOI dataset, the aim is to introduce a single gRNA into each cell.
+                    </p>
+                    <select id="moi" name="moi">
+                        <option value="high" selected>high</option>
+                        <option value="low">low</option>
+                    </select>
+                </div>
+                <div class="settings-group">
+                    <label for="side">side:</label>
+                    <p class="description">
+                        From the Sceptre Manual: The parameter side controls the sidedness of the test and can take values "left," "right," or "both" ("both" indicates a two-tailed test). Two-tailed tests typically are the best choice for trans analyses, as the direction of trans relationships is generally uncertain. For cis analyses, on the other hand, the sidedness of the test should be chosen based on the type of genomic element targeted and the CRISPR perturbation modality.
+                    </p>
+                    <select id="side" name="side">
+                        <option value="both" selected>both</option>
+                        <option value="left">left</option>
+                        <option value="right">right</option>
+                    </select>
+                </div>
+                <div class="settings-group">
+                    <label for="grna_integration_strategy">grna_integration_strategy:</label>
+                    <p class="description">
+                        From the Sceptre Manual: The parameter grna_integration_strategy controls if and how gRNAs that target the same genomic element are combined. "union": Merge all guides from the same element. "bonferroni": When expecting a variable effect across guides from the same element. "singleton": Consider the effect of each guide in isolation.
+                    </p>
+                    <select id="grna_integration_strategy" name="grna_integration_strategy">
+                        <option value="union" selected>union</option>
+                        <option value="bonferroni">bonferroni</option>
+                        <option value="singleton">singleton</option>
+                    </select>
+                </div>
+                <div class="settings-group">
+                    <label for="resampling_approximation">resampling_approximation:</label>
+                    <p class="description">
+                        From the Sceptre Manual: "skew_normal" or "no_approximation." By default, sceptre fits a parametric density (specifically, a skew-normal density) to the distribution of null z-scores and then computes a p-value by evaluating the tail probability of the fitted density at the observed z-score. We recommend setting resampling_approximation to "no_approximation" when the negative control p-values exhibit miscalibration, and the number of pairs to be tested is less than ~10,000.
+                    </p>
+                    <select id="resampling_approximation" name="resampling_approximation">
+                        <option value="skew_normal" selected>skew_normal</option>
+                        <option value="no_approximation">no_approximation</option>
+                    </select>
+                </div>
+                <div class="settings-group">
+                    <label for="control_group">control_group (string):</label>
+                    <p class="description">
+                        From the Sceptre Manual: The primary goal of Sceptre is to test for association between a given gRNA target and response. control_group is a parameter related to the set of cells used to carry out this test of association. Users can select the control group to use by passing either "complement" or "nt_cells" to control_group.
+                    </p>
+                    <select id="control_group" name="control_group">
+                        <option value="default" selected>default</option>
+                        <option value="complement">complement</option>
+                        <option value="nt_cells">nt_cells</option>
+                    </select>
+                </div>
+                <div class="settings-group">
+                    <label for="resampling_mechanism">resampling_mechanism:</label>
+                    <p class="description"> 
+                        From the Sceptre Manual: Sceptre provides two procedures for resampling the gRNA indicator vector: permutations (default) and conditional resampling (also known as the conditional randomization test or crt). The permutation procedure involves randomly permuting the gRNA indicator vector B times. The conditional resampling procedure is slightly more complex (Barry et al. 2021).
+                    </p>
+                    <select id="resampling_mechanism" name="resampling_mechanism">
+                        <option value="default" selected>default</option>
+                        <option value="crt">crt</option>
+                    </select>
+                </div>
+                <div class="settings-group">
+                    <label for="formula_object">formula_object (string):</label>
+                    <p class="description">
+                        From the Sceptre Manual: The formula object specifies how to adjust for covariates in the model. If you have covariates to adjust for in the experiment (e.g., batch), input "covariate." If not, use "default."
+                    </p>
+                    <select id="formula_object" name="formula_object">
+                        <option value="default" selected>default</option>
+                        <option value="covariate">covariate</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inference Pairs Tab -->
+        <div id="InferencePairs" class="tab-content">
+            <div class="section">
+                <h3>Inference Pairs Options</h3>
+                <div class="settings-group">
+                    <label>
+                        <input type="radio" name="inference_option" value="by_distance" onclick="showInferenceOption('by_distance')" checked>
+                        By Distance
+                    </label>
+                    <p class="description">By Distance (Use the guide center to detect neighboors in a  defined distance)</p>
+                </div>
+                <div class="settings-group" id="distance-input">
+                    <label for="distance_from_center">Distance from the Guide center (int):</label>
+                    <input type="number" id="distance_from_center" name="distance_from_center" value="1000000">
+                </div>
+                <div class="settings-group">
+                    <label>
+                        <input type="radio" name="inference_option" value="in_trans" onclick="showInferenceOption('in_trans')">
+                        In Trans (all x all)
+                    </label>
+                    <p class="description">In Trans: Test all guides x all genes.</p>
+                </div>
+                <div class="settings-group">
+                    <label>
+                        <input type="radio" name="inference_option" value="predefined_pairs" onclick="showInferenceOption('predefined_pairs')">
+                        By Predefined Pairs
+                    </label>
+                    <p class="description">
+                        By predefined Pairs (a table with "guide_id", "gene_name", "intended_target_name", "pair_type") allows manual user input to define the guide-gene pairs being tested. Make sure to specify the gene names in accordance with the GTF file used as input. Use "guide_id" and "gene_name" as input.
+                    </p>
+                </div>
+                <!-- Predefined Pairs Table Section -->
+                <div id="predefined-pairs-section" style="display:none;">
+                    <div class="section">
+                        <h3>Load Predefined Pairs Table</h3>
+                        <div class="upload-buttons">
+                            <input type="file" id="pairs-file-input" accept=".csv,.tsv">
+                            <button onclick="loadFile('Pairs')">Load File</button>
+                            <button onclick="togglePasteArea('Pairs')">Paste Data</button>
+                            <button onclick="exportTable('pairs-table')">Export Table</button>
+                        </div>
+                        <textarea id="Pairs-paste-area" placeholder="Paste data here (from Excel)" style="display:none;"></textarea>
+                        <button id="Pairs-parse-paste-button" onclick="parsePastedData('Pairs')" style="display:none;">Parse Pasted Data</button>
+                        <div class="table-container">
+                            <div style="float: right;">Row: <span id="pairs-row-count">0</span></div>
+                            <table id="pairs-table">
+                                <thead>
+                                    <tr>
+                                        <th>guide_id</th>
+                                        <th>gene_name</th>
+                                        <th>intended_target_name</th>
+                                        <th>pair_type</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Table rows will be added here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quality Filters Tab -->
+        <div id="QualityFilters" class="tab-content">
+            <div class="section">
+                <h3>Quality Filters</h3>
+                <div class="settings-group">
+                    <label for="min_genes"> Minimum number of genes expressed required for a cell to pass filtering (int):</label>
+                    <p class="description">
+                        Minimum number of genes with UMI count > 0 in order to keep that cell in the following analysis.
+                    </p>
+                    <input type="number" id="min_genes" name="min_genes" value="500">
+                </div>
+                <div class="settings-group">
+                    <label for="min_cells"> Minimum number of cells expressed required for a gene to pass filtering (int):</label>
+                    <p class="description">
+                        Minimum number of cells with UMI count > 0 for a given gene in order to keep that gene in the following analysis.
+                    </p>
+                    <input type="number" id="min_cells" name="min_cells" value="3">
+                </div>
+                <div class="settings-group">
+                    <label for="pct_mito"> Mitochondrial Percentage (%) (int 0-100):</label>
+                    <p class="description">
+                        Maximum percentage of mitochondrial transcripts for a given cell in order to keep that cell in the following analysis (number between 0-100).
+                    </p>
+                    <input type="number" id="pct_mito" name="pct_mito" value="20" step="1" min="0" max="100">
+                </div>
+            </div>
+        </div>
+
+        <!-- Evaluation Tab -->
+        <div id="Evaluation" class="tab-content">
+            <div class="section">
+                <h3>Evaluation Options</h3>
+                <!-- Option Selection -->
+                <div class="settings-group">
+                    <label>
+                        <input type="radio" name="evaluation_option" value="user_central_nodes" onclick="showEvaluationOption('user_central_nodes')" checked>
+                        By User-Defined Central Nodes
+                    </label>
+                    <label>
+                        <input type="radio" name="evaluation_option" value="central_nodes_num" onclick="showEvaluationOption('central_nodes_num')">
+                        By Central Nodes Ranked by Degree
+                    </label>
+                </div>
+        
+                <!-- User Central Nodes Input -->
+                <div id="user_central_nodes_section" class="settings-group">
+                    <label for="user_central_nodes">User-defined central nodes (string):</label>
+                    <p class="description">Specifies the central nodes you are interested to be displayed on the 'gene x gene' network plot.</p>
+                    <input type="text" id="user_central_nodes" name="user_central_nodes" value="undefined">
+                </div>
+        
+                <!-- Central Nodes Num Input -->
+                <div id="central_nodes_num_section" class="settings-group" style="display:none;">
+                    <label for="central_nodes_num">The number of central nodes ranked by degree (int):</label>
+                    <p class="description">Specifies the number of top central nodes, ranked by degree, to be displayed on the 'gene x gene' network plot.</p>
+                    <input type="number" id="central_nodes_num" name="central_nodes_num" value="2">
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Include Papa Parse Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
