@@ -64,6 +64,7 @@ library_spec:
     onlist: !Onlist
       location: remote
       filename: 737K-august-2016.txt
+      md5: fe7d278ad0ab1ad278884ba56c9a4793
     regions: null
   - !Region
     parent_id: hashing
@@ -87,7 +88,8 @@ library_spec:
     max_len: 15
     onlist: !Onlist
       location: remote
-      filename: HTO_medatada.txt
+      filename: utsw_hashing_metadata.xlsx
+      md5: 6d55e65040c1dc930b39ca689608bb29 
     regions: null
   - !Region
     parent_id: hashing
