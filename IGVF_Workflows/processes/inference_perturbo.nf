@@ -1,14 +1,17 @@
 
 process inference_perturbo {
-    conda '/data/pinello/SHARED_SOFTWARE/anaconda_latest/envs/lb_envs/scverse_ml008'
+
     input:
     path input_mdata
 
     output:
-    path "perturbo_mdata.h5mu", emit: inference_mudata
+    path "inference_mudata.h5mu", emit: inference_mudata
 
     script:
         """
-        perturbo_inference.py ${input_mdata} perturbo_mdata.h5mu
+        eval "\$(micromamba shell hook --shell bash)"
+        micromamba activate perturbo_env
+        micromamba run -n perturbo_env python /home/jovyan/CRISPR-jamboree_0926/IGVF_Workflows/bin/perturbo_inference.py ${input_mdata} inference_mudata.h5mu
+        micromamba deactivate
         """
 }

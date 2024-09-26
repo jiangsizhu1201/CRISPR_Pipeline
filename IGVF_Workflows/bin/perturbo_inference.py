@@ -78,13 +78,16 @@ def run_perturbo(mdata_input_fp, mdata_output_fp):
         .merge(pairs_to_test_df)
     )
 
+    
     mdata = md.read(mdata_input_fp)
     mdata.uns["test_results"] = element_effects[
         [
+            "gene_id", 
+            "guide_id",
             "intended_target_name",
-            "gene_id",
-            "p_value",
             "log2_fc",
+            "p_value",
+            "pair_type"
         ]
             ]
     

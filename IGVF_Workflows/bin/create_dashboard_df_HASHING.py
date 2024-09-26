@@ -145,7 +145,9 @@ def create_dashboard_df(guide_fq_tbl, hashing_fq_tbl, mudata_path, gene_ann_path
                                     (inference_table['p_value'] < 0.05)]
     target_perturbed_001 = inference_table[inference_table['intended_target_name'].isin(set(targets))& 
                                     (inference_table['p_value'] < 0.01)]
-    gi_highlight = f"Total Tested sgRNA-gene pairs: {inference_table.shape[0]}, Number of sgRNAS affecting targets(p_value<0.05) (In general, targets are promoters being directly targeted by a guide): {len(target_perturbed_005)}, % of testing sgRNAs affecting targets: {len(target_perturbed_005) / inference_table.shape[0] * 100:.2f}%"
+    direct_target_perturbed_005 = target_perturbed_005[target_perturbed_005['pair_type'] == "Direct targeting"]
+    negative_target_perturbed_005 = target_perturbed_005[target_perturbed_005['pair_type'] == "Targeting_negative_control"]
+    gi_highlight = f"Total tested sgRNA-gene pairs: {inference_table.shape[0]}, Total tested significant sgRNA-gene pairs(p_value<0.05): {len(target_perturbed_005)}, Total number of Direct-Targeting pairs presenting significant perturbation effects(p<0.05): {len(direct_target_perturbed_005)}, Percentage of total tested Direct-Targeting pairs presenting significant perturbation effects(p<0.05): {np.round((len(direct_target_perturbed_005)/inference_table.shape[0])*100,2)}%, Total number of Negative pairs presenting significant perturbation effect(p<0.05): {len(negative_target_perturbed_005)}"
     gi_table_005 = inference_table.copy()
     gi_table_005['significant'] = gi_table_005['p_value'].apply(lambda x: True if x < 0.05 else False)
 
@@ -162,7 +164,7 @@ def create_dashboard_df(guide_fq_tbl, hashing_fq_tbl, mudata_path, gene_ann_path
     df_sgRNA_frequencies = sgRNA_frequencies.reset_index()
     df_sgRNA_frequencies.columns = ['sgRNA', 'Frequency']
     median_frequency = df_sgRNA_frequencies['Frequency'].median()
-    gs_highlight=f"Number of Cells with at least one sgRNA assigned: {number_of_guide_barcodes_with_positive_call}, The median of cells with a positive sgRNA call is: {median_frequency}"
+    gs_highlight=f"Number of Cells with at least one sgRNA assigned: {human_format(number_of_guide_barcodes_with_positive_call)}, The median of cells with a positive sgRNA call is: {median_frequency}"
     
     df_sgRNA_table = df_sgRNA_frequencies.copy()
     df_sgRNA_table.columns = ['sgRNA', '# guide barcodes']
@@ -228,7 +230,7 @@ def main():
     
     ## consider the order of modules
     json_df_sorted = json_df.sort_values(by='description', ascending=True)
-    all_df = pd.concat([guide_check_df, hashing_check_df, cell_stats, gene_stats, json_df_sorted, hs_demux_df, gs_img_df, rna_img_df, guide_img_df, inf_img_df, gi_df])
+    all_df = pd.concat([guide_check_df, hashing_check_df, cell_stats, gene_stats, json_df_sorted, hs_demux_df, rna_img_df, guide_img_df, inf_img_df, gs_img_df, gi_df])
 
     with open(args.output, 'wb') as f:
         pickle.dump(all_df, f)

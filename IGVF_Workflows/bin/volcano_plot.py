@@ -47,7 +47,7 @@ def volcano(mdata: MuData, log2_fc_thresh: float, p_value_thresh: float):
     # Annotate down-regulated genes 
     for index, row in annotated.iterrows():
         # Annotate with gene_id and guide_id, bold and size adjustment
-        label = f"{row['gene_id']} ({row['guide_id']})"
+        label = f"{row['intended_target_name']} ({row['guide_id']})"
         texts.append(plt.text(x=row['log2_fc'], y=-np.log10(row['p_value']), s=label, fontsize=8))
 
     # Adjust the text to prevent overlap
