@@ -1,0 +1,29 @@
+name: nfenv
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - nextflow 
+  - numpy=1.26.4   
+  - pandas=2.2.2
+  - pip
+  - kallisto=0.50.1
+  - kb-python=0.28.2  
+  - anndata=0.10.8
+  - scanpy=1.10.2
+  - matplotlib=3.9.1
+  - ipykernel=6.29.5
+  - muon=0.1.6
+  - mudata=0.2.4
+  - seaborn
+  - scrublet
+  - networkx
+  - umap
+  - pip:
+      - openpyxl==3.1.2
+      - seqspec
+      - GMM_Demux
+      - adjustText
+      - igraph
+      - git+https://github.com/LucasSilvaFerreira/GTFProcessing.git
