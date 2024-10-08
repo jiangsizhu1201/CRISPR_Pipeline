@@ -2,13 +2,14 @@
 import muon as mu
 import pandas as pd
 import argparse
+from scipy.sparse import csr_matrix
 
 def add_guide_assignment(mudata, guide_assignment_csv):
     # Load MuData object
     mudata = mu.read_h5mu(mudata)
-    matrix = pd.read_csv(guide_assignment_csv)
-
-    mudata.mod['guide'].layers['guide_assignment'] = matrix.T
+    df = pd.read_csv(guide_assignment_csv)
+    sparse_matrix = csr_matrix(df.T)
+    mudata.mod['guide'].layers['guide_assignment'] = sparse_matrix
 
     mudata.write("sceptre_assignment_mudata.h5mu")
 

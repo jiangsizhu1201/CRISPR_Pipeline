@@ -111,8 +111,8 @@ def create_dashboard_df(guide_fq_tbl, mudata_path, gene_ann_path, filtered_ann_p
     cn_highlight=f"Number of guide barcodes (unfiltered) intersecting with scRNA barcodes (unfiltered): {human_format(intersection_guidebc_scrnabc)},  Number of cells after filtering by the minimal number of genes to consider a cell usable: {human_format(gene_filtered_ann.shape[0])}, Number of cells after filtering doublets: {human_format(mudata.shape[0])}"
 
     gn_highlight=f"Number of genes detected after filtering: {human_format(mudata.mod['gene'].var.shape[0])}, Mean UMI counts per cell after filtering: {human_format(mudata.mod['gene'].X.sum(axis=1).mean())}"
-    cell_stats = new_block('Filtering Summary', '', 'Cell Number', cn_highlight, True)
-    gene_stats = new_block('Filtering Summary', '', 'Gene Number', gn_highlight, True)
+    cell_stats = new_block('Filtering Summary', '', 'Filter to select high quality cells', cn_highlight, True)
+    gene_stats = new_block('Filtering Summary', '', 'Gene Statistics', gn_highlight, True)
 
     ### Create image_df for scRNA preprocessing 
     rna_img_df = new_block('scRNA', 'scRNA preprocessing', 'Visualization','', False, 
@@ -120,7 +120,7 @@ def create_dashboard_df(guide_fq_tbl, mudata_path, gene_ann_path, filtered_ann_p
         image_description= ['Knee plot of UMI counts vs. barcode index.', 'Scatterplot of total counts vs. genes detected, colored by mitochondrial content.','Distribution of gene counts, total counts, and mitochondrial content.', 'Number of scRNA barcodes using different\nTotal UMI thresholds.'])
 
     ### Create image_df for guide
-    guide_assignment_matrix = mudata.mod['guide'].layers['guide_assignment']
+    guide_assignment_matrix = mudata.mod['guide'].layers['guide_assignment'].toarray()
     guide_highlight = f"Number of guide barcodes (unfiltered) intersecting with scRNA barcodes (unfiltered): {human_format(intersection_guidebc_scrnabc)}, % of guides barcodes (unfiltered) intersecting with the scRNA barcode (unfiltered): {str(np.round((intersection_guidebc_scrnabc / guide_ann.obs.shape[0]) * 100, 2))}%"
     guide_img_df = new_block('Guide', '', 'Visualization', guide_highlight, True,
                     image = ['figures/guides_per_cell_histogram.png', 'figures/cells_per_guide_histogram.png', 'figures/guides_UMI_thresholds.png'],
@@ -157,7 +157,7 @@ def create_dashboard_df(guide_fq_tbl, mudata_path, gene_ann_path, filtered_ann_p
     
     df_sgRNA_table = df_sgRNA_frequencies.copy()
     df_sgRNA_table.columns = ['sgRNA', '# guide barcodes']
-    gs_img_df = new_block('Inference', '', 'Guide Assignment', gs_highlight, True, table=df_sgRNA_table,
+    gs_img_df = new_block('Guide', '', 'Guide Assignment', gs_highlight, True, table=df_sgRNA_table,
                     table_description='Number of guide barcodes with a positive sgRNA call',
                     image = ['figures/guides_hist_num_sgRNA.png'],
                     image_description=['Histogram of the number of sgRNA represented per cell'])
@@ -186,7 +186,6 @@ def main():
     parser = argparse.ArgumentParser(description="Process JSON files and generate dashboard dataframes.")
     parser.add_argument('--json_dir', type=str, help="Directory containing JSON files to process")
     parser.add_argument('--guide_fq_tbl', required=True, help='Path to the guide fastq position table')
-    parser.add_argument('--hashing_fq_tbl', required=True, help='Path to the hashing fastq position table')
     parser.add_argument('--mudata', required=True, help='Path to the mudata object')
     parser.add_argument('--gene_ann', required=True, help='Path to the gene anndata file')
     parser.add_argument('--gene_ann_filtered', required=True, help='Path to the gene filtered anndata file')

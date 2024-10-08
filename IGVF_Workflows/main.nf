@@ -1,6 +1,7 @@
 nextflow.enable.dsl=2
 
 include { seqSpecCheck_pipeline } from './seqSpecCheck_pipeline.nf'
+include { seqSpecCheck_pipeline_HASHING } from './seqSpecCheck_pipeline_HASHING.nf'
 include { prepare_mapping_pipeline } from './prepare_mapping_pipeline.nf'
 include { mapping_rna_pipeline } from './mapping_rna_pipeline.nf'
 include { mapping_guide_pipeline } from './mapping_guide_pipeline.nf'
@@ -12,7 +13,14 @@ include { dashboard_pipeline_HASHING } from './dashboard_pipeline_HASHING.nf'
 include { dashboard_pipeline } from './dashboard_pipeline.nf'
 
 workflow {
-  seqSpecCheck_pipeline()
+  
+  if (params.DATASET_HASHING == "true"){
+    seqSpecCheck_pipeline_HASHING() 
+    }
+  else {
+    seqSpecCheck_pipeline()
+    }
+
   prepare_mapping_pipeline()
 
   mapping_rna_pipeline(
@@ -43,10 +51,10 @@ workflow {
     )
 
     dashboard_pipeline_HASHING (
-      seqSpecCheck_pipeline.out.guide_seqSpecCheck_plots,
-      seqSpecCheck_pipeline.out.guide_position_table,
-      seqSpecCheck_pipeline.out.hashing_seqSpecCheck_plots,
-      seqSpecCheck_pipeline.out.hashing_position_table,
+      seqSpecCheck_pipeline_HASHING.out.guide_seqSpecCheck_plots,
+      seqSpecCheck_pipeline_HASHING.out.guide_position_table,
+      seqSpecCheck_pipeline_HASHING.out.hashing_seqSpecCheck_plots,
+      seqSpecCheck_pipeline_HASHING.out.hashing_position_table,
       process_mudata_pipeline_HASHING.out.adata_rna,
       process_mudata_pipeline_HASHING.out.filtered_anndata_rna,
       mapping_rna_pipeline.out.ks_transcripts_out_dir_collected,
@@ -76,9 +84,8 @@ workflow {
     dashboard_pipeline (
       seqSpecCheck_pipeline.out.guide_seqSpecCheck_plots,
       seqSpecCheck_pipeline.out.guide_position_table,
-      seqSpecCheck_pipeline.out.hashing_seqSpecCheck_plots,
-      seqSpecCheck_pipeline.out.hashing_position_table,
       process_mudata_pipeline.out.adata_rna,
+      process_mudata_pipeline.out.filtered_anndata_rna,
       mapping_rna_pipeline.out.ks_transcripts_out_dir_collected,
       process_mudata_pipeline.out.adata_guide,
       mapping_guide_pipeline.out.ks_guide_out_dir_collected,

@@ -8,6 +8,6 @@ process downloadGTF {
 
     script:
     """
-        wget "${gtf_url}" -O gencode_gtf.gtf.gz
+        wget --continue --progress=dot:mega --tries=0 $gtf_url -O gencode_gtf.gtf.gz
     """
 }

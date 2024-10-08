@@ -107,7 +107,7 @@ def plot_guides_umi_threshold(mudata, save_dir):
 def plot_sgRNA_frequencies(mudata, save_dir):
     cell_ids = mudata.mod['guide'].obs.index
     guide_ids = mudata.mod['guide'].var.index
-    guide_assignment_matrix = mudata.mod['guide'].layers['guide_assignment']
+    guide_assignment_matrix = mudata.mod['guide'].layers['guide_assignment'].toarray()
     df_guide_assignment = pd.DataFrame(guide_assignment_matrix, index=cell_ids, columns=guide_ids)
 
     plt.figure(figsize=(10, 6))

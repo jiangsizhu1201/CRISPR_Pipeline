@@ -43,8 +43,7 @@ def main():
     # Update mudata
     # Find the intersection of barcodes between scRNA and guide data
     intersecting_barcodes = list(set(mdata.mod['gene'].obs_names)
-                                 .intersection(mdata.mod['guide'].obs_names)
-                                 .intersection(mdata.mod['hashing'].obs_names))
+                                 .intersection(mdata.mod['guide'].obs_names))
 
     mdata = MuData({
         'gene': mdata.mod['gene'][intersecting_barcodes, :].copy(),

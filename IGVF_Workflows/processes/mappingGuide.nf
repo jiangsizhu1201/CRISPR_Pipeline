@@ -2,7 +2,7 @@
 process mappingGuide {
    
     cache 'lenient'
-    cpus 2
+    cpus 4
     debug true
 
     input:
@@ -28,7 +28,7 @@ process mappingGuide {
 
         kb count -i ${guide_index} -g ${t2g_guide} --verbose -w ${barcode_file} \\
                 --h5ad --kallisto \$k_bin --bustools \$bustools_bin -x \$chemistry -o ${batch}_ks_guide_out -t ${task.cpus} \\
-                ${fastq_files} --overwrite -m 20G
+                ${fastq_files} --overwrite -m 64G
 
         echo "KB mapping Complete"
         """

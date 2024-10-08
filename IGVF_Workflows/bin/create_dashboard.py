@@ -12,7 +12,7 @@ def generate_html_content(df, svg_mapping):
     html += '<div class="sidebar" role="navigation" aria-label="Dashboard navigation">'
 
     # Create tab buttons
-    tab_order = ['Statistics', 'scRNA', 'Guide', 'Inference']
+    tab_order = ['Filtering Summary', 'scRNA', 'Guide', 'Inference']
     modality_set = sorted(set(df['modality']), key=lambda x: tab_order.index(x))
     
     for i, modality in enumerate(modality_set):
@@ -265,14 +265,12 @@ def main():
         "guides_per_cell_histogram.png": "svg/barplot.svg",
         "cells_per_guide_histogram.png": "svg/barplot.svg",
         "cells_per_hto_barplot.png": "svg/barplot.svg",
-        "umap_hto.png" : "svg/scatter.svg",
         "table_icon": "svg/table.svg",
         "default_icon": "svg/table.svg"
     }
 
     # Generate the HTML
-    all_df_sorted = all_df.sort_values(by='description', ascending=True)
-    dashboard_html = df_to_html_side_tabs(all_df_sorted, svg_mapping)
+    dashboard_html = df_to_html_side_tabs(all_df, svg_mapping)
 
     # Write the HTML to the output file
     with open(args.output, 'w') as f:
