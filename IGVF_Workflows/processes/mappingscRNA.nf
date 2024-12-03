@@ -2,7 +2,6 @@
 process mappingscRNA {
     
     cache 'lenient'
-    cpus 4
     debug true
 
     input:
@@ -28,8 +27,8 @@ process mappingscRNA {
 
         kb count -i ${transcriptome_idx} -g ${transcriptome_t2g} --verbose -w ${barcode_file} \\
                 --h5ad --kallisto \$k_bin --bustools \$bustools_bin -x \$chemistry -o ${batch}_ks_transcripts_out -t ${task.cpus} \\
-                ${fastq_files} --overwrite -m 64G
+                ${fastq_files} --overwrite 
 
-        echo "KB mapping Complete"
+        echo "scRNA KB mapping Complete"
         """
 }

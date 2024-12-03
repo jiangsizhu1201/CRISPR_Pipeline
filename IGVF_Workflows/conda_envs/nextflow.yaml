@@ -11,6 +11,7 @@ dependencies:
   - kallisto=0.50.1
   - kb-python=0.28.2  
   - anndata=0.10.9
+  - gmm-demux
   - scanpy
   - matplotlib
   - ipykernel
@@ -24,7 +25,6 @@ dependencies:
   - pip:
       - openpyxl
       - seqspec
-      - GMM_Demux
       - adjustText
       - igraph
       - git+https://github.com/LucasSilvaFerreira/GTFProcessing.git

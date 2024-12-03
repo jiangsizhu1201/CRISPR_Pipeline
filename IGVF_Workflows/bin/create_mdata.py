@@ -17,6 +17,11 @@ def main(adata_rna, adata_guide, guide_metadata, gtf, moi):
     gtf = GTFProcessing(gtf)
     df_gtf = gtf.get_gtf_df()   
 
+    # add targeting_chr, start, end to the targeting elements
+    gene_map_df = df_gtf.groupby('gene_name')[['chr', 'start', 'end']].first()
+    guide_metadata = guide_metadata.merge(gene_map_df, how='left', left_on='targeting', right_index=True)
+    guide_metadata = guide_metadata.rename(columns={'chr': 'intended_target_chr', 'start': 'intended_target_start', 'end': 'intended_target_end'})
+
     ## change in adata_guide
     # adding var for guide
     adata_guide.var.reset_index(inplace=True)
@@ -27,18 +32,29 @@ def main(adata_rna, adata_guide, guide_metadata, gtf, moi):
     if len(guide_metadata) != len(adata_guide.var):
         print(f"The numbers of sgRNA_ID/guide_id are different: There are {len(adata_guide.var)} in guide anndata, but there are {len(guide_metadata)} in guide metadata.")
 
-    # guide_metadata['guide_number'] = guide_metadata['sgRNA_ID'].apply(lambda x: 1 if 'sg1' in x else (2 if 'sg2' in x else None))
-    adata_guide.var = adata_guide.var.merge(guide_metadata, left_on='guide_id', right_on ='sgRNA_ID', how='inner')
-    adata_guide.var[['intended_target_name', 'intended_target_chr', 'intended_target_start', 'intended_target_end', 'sequence']] = guide_metadata[['Target_name', 'chr', 'start', 'end', 'sgRNA_sequences']]
+    adata_guide.var = adata_guide.var.merge(guide_metadata, left_on='guide_id', right_on ='guide_id', how='inner')
+    adata_guide.var[['intended_target_name', 'protospacer', 'guide_chr', 'guide_start', 'guide_end', 'intended_target_chr', 'intended_target_start', 'intended_target_end']] = guide_metadata[['targeting', 'protospacer', 'guide_chr', 'guide_start', 'guide_end','intended_target_chr', 'intended_target_start', 'intended_target_end']]
     adata_guide.var['targeting'] =  'TRUE'
 
     # reset feature_id to var_names (index)
-    guide_metadata['feature_id'] = guide_metadata['sgRNA_ID'] + "|" + guide_metadata['sgRNA_sequences']
+    guide_metadata['feature_id'] = guide_metadata['guide_id'] + "|" + guide_metadata['protospacer']
     adata_guide.var_names = guide_metadata['feature_id']
-
-    # adding uns for guide (needed for sceptre_inference; moi as low/high)
-    adata_guide.uns['moi'] = np.array([moi], dtype=object)
+    
+    # adding uns for guide 
     adata_guide.uns['capture_method'] = np.array(['CROP-seq'], dtype=object)
+    # calculate moi
+    if moi in ['high', 'low']:
+        adata_guide.uns['moi'] = np.array([moi], dtype=object)
+    else:
+    # Calculate MOI if not specified
+        binary_matrix = (adata_guide.X > 0).astype(int)
+        avg_guides_per_cell = np.mean(np.sum(binary_matrix, axis=1))
+        calculated_moi = 'high' if avg_guides_per_cell > 1.5 else 'low'
+        adata_guide.uns['moi'] = np.array([calculated_moi], dtype=object)
+    
+    print(f"Average guides per cell: {avg_guides_per_cell:.2f}")
+    print(f"MOI status: {calculated_moi}")
+
 
     # adding number of nonzero guides and batch number
     adata_guide.obs['num_expressed_guides'] = (adata_guide.X > 0).sum(axis=1)
@@ -105,7 +121,7 @@ if __name__ == "__main__":
     parser.add_argument('adata_guide', type=str, help='Path to the guide AnnData file.')
     parser.add_argument('guide_metadata', type=str, help='Path to the guide metadata Excel file.')
     parser.add_argument('gtf', type=str, help='Path to the GTF file.')
-    parser.add_argument('moi', type=str, help='MOI information.')
+    parser.add_argument('moi', default='', help='Multiplicity of infection (MOI) of the screen.')
     
 
     args = parser.parse_args()

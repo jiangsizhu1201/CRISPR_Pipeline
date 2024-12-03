@@ -1,7 +1,7 @@
 
 process createDashboard_HASHING {
     cache 'lenient'
-    publishDir './Pipeline_Output'
+    publishDir './pipeline_dashboard'
 
     input:
         path guide_seqSpecCheck_plots

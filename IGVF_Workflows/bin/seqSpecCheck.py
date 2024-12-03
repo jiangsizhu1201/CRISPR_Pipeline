@@ -37,21 +37,22 @@ def fastq_sequence_plot(seqs, file_name, ax):
 def find_sequence_positions(fastq_file, guide_metadata, max_reads=100000, sep='\t'):
     # Read FASTQ sequences
     seqs = readFastq(fastq_file, max_reads)
-    metadata_df = pd.read_excel(guide_metadata)
-    pos = []
-    matched_reads = set()
-
-    for i, s in enumerate(seqs):
-        if i in matched_reads:
-            continue
-        for n in metadata_df.iloc[:, 1].values:  # Using the second column; sequences
-            if n in s:
-                matched_reads.add(i)
-                pos.append(s.index(n))
-
-    position = Counter(pos)
-    pos_table = pd.DataFrame.from_dict(position, orient='index', columns=['Count']).rename_axis('Position Index')
     
+    # Load metadata and check for required column
+    metadata_df = pd.read_csv(guide_metadata, sep=sep)
+    guide_column = 'protospacer' if 'protospacer' in metadata_df else 'sequence'
+    if guide_column not in metadata_df:
+        raise ValueError("Guide metadata must contain 'protospacer' or 'sequence' column.")
+    
+    positions = [
+        s.index(n) for s in seqs for n in metadata_df[guide_column].values if n in s
+    ]
+    
+    pos_table = (
+            pd.DataFrame.from_dict(Counter(positions), orient='index', columns=['Count'])
+            .rename_axis('Position Index')
+            .sort_values(by='Count', ascending=False)
+        )
     return pos_table
 
 def main():

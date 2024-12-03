@@ -13,12 +13,12 @@ process inference_sceptre {
     cov_string=\$(cat $cov_string)
 
     cat <<EOF > args.txt
-    $mudata_fp
-    $params.side
-    $params.grna_integration_strategy
-    $params.resampling_approximation
-    $params.control_group
-    $params.resampling_mechanism
+    ${mudata_fp}
+    ${params.side}
+    ${params.grna_integration_strategy}
+    ${params.resampling_approximation}
+    ${params.control_group}
+    ${params.resampling_mechanism}
     ${params.formula_object}
     \$cov_string
     EOF

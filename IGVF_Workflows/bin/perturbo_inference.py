@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import argparse
 import perturbo
 import mudata as md
@@ -7,10 +6,7 @@ import numpy as np
 import pandas as pd
 
 def run_perturbo(mdata_input_fp, mdata_output_fp):
-    """
-    Run PerTurbo on the selected guide--element pairs and return a new MuData object
-    with the test results stored in mdata.uns["test_results"]
-    """
+
     mdata = md.read(mdata_input_fp)
     mdata["gene"].obs = (
         mdata.obs.join(mdata["gene"].obs.drop(columns=mdata.obs.columns, errors='ignore'))

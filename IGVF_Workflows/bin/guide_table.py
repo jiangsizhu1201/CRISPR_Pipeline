@@ -4,8 +4,8 @@ import pandas as pd
 import argparse
 
 def process_table(guide_table):
-    guide_metadata = pd.read_excel(guide_table, header=0)
-    guide_metadata[['sgRNA_sequences', 'sgRNA_ID']].to_csv('guide_features.txt',
+    guide_metadata = pd.read_csv(guide_table, sep="\t")
+    guide_metadata[['protospacer', 'guide_id']].to_csv('guide_features.txt',
                                                            sep='\t', header=None, index=None)
 
 def main():
