@@ -59,7 +59,7 @@ def run_perturbo(mdata_input_fp, mdata_output_fp):
         )
 
     model = perturbo.PERTURBO(mdata, likelihood="nb")
-    model.train(20, lr=0.01, batch_size=128)
+    model.train(20, lr=0.01, batch_size=128, accelerator="gpu")
 
     igvf_name_map = {
         "element": "intended_target_name",
