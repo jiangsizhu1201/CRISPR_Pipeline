@@ -2,7 +2,7 @@
 
 > **IMPORTANT**: All parameters defined in this configuration must have valid, non-empty values. The Nextflow pipeline requires every parameter to be properly set - empty or missing parameters will cause pipeline execution failures. Please ensure all parameters are specified before running the pipeline.
 
-This document explains the configuration parameters for the single-cell RNA sequencing and CRISPR screening analysis pipeline.
+This document explains the configuration parameters for the CRISPR scPerturbed-seq pipeline.
 
 ## Input Data Parameters
 
