@@ -33,7 +33,7 @@ Before running the pipeline, ensure you have the following dependencies installe
 
 2. Install Perturbo:
     - Create conda environment for Perturbo
-    - Install wheel file from `IGVF_Workflows` directory
+    - Install Perturbo via wheel file from `IGVF_Workflows/install_perturbo` directory
     - Remember to configure environment path in input.config
 
    ```bash
