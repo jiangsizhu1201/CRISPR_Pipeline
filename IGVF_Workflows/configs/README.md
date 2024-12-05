@@ -84,8 +84,7 @@ Specific test files are configured for validation:
 3. The pipeline supports both local and remote genome references
 4. Ensure all YAML specification files are present in the specified directory
 5. Adjust threshold values and parameters according to your experimental design
-6. Validate that all parameters have proper values - the pipeline will fail if any parameter is empty or missing
-7. Use placeholder values like 'default', 'undefined', or 'undecided' when actual values are not yet determined, but never leave parameters empty
+6. Use placeholder values like 'default', 'undefined', or 'undecided' when actual values are not yet determined, but never leave parameters empty
 
 ## Parameter Validation Requirements
 
