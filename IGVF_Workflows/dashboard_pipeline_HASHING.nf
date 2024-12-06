@@ -1,4 +1,3 @@
-
 nextflow.enable.dsl=2
 
 include { createDashboard_HASHING } from './processes/dashboard_HASHING.nf' 

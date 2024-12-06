@@ -2,7 +2,7 @@ nextflow.enable.dsl=2
 
 include { skipGenomeDownload } from './processes/skipGenomeDownload.nf'
 include { downloadGenome } from './processes/downloadGenome.nf'
-include { prepare_covariate } from "./processes/prepare_covariate.nf"
+include { prepare_covariate } from './processes/prepare_covariate.nf'
 
 workflow prepare_mapping_pipeline {
     if (file(params.genome_local_path).exists()) {

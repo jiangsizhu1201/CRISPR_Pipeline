@@ -1,5 +1,5 @@
-
 nextflow.enable.dsl=2
+
 include { evaluation_plot } from './processes/evaluation_plot.nf'
 include { evaluation_undefined_plot } from './processes/evaluation_undefined_plot.nf'
 

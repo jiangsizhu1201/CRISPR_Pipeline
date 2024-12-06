@@ -21,37 +21,43 @@ Before running the pipeline, ensure you have the following dependencies installe
 3. **Singularity** (Container Platform)
    - Must be available on your execution environment
 
-### Installation
+## Installation Guide
 
-1. Clone the repository:
+### Repository Setup
 
-   ```bash
-   git clone https://github.com/jiangsizhu1201/CRISPR_Pipeline.git
-   # Navigate to the workflow directory
-   cd IGVF_Workflows
-   ```
+```bash
+# Clone the repository
+git clone https://github.com/jiangsizhu1201/CRISPR_Pipeline.git
+cd IGVF_Workflows
+```
 
-2. Install Perturbo:
-    - Create conda environment for Perturbo
-    - Install Perturbo via wheel file from `IGVF_Workflows/install_perturbo` directory
-    - Remember to configure environment path in input.config
+### Perturbo Installation
 
-   ```bash
-   # Create a separate environment for Perturbo
-   conda create -n perturbo_env
-   conda activate perturbo_env
+1. Create and activate Perturbo environment
+```bash
+conda create -n perturbo_env
+conda activate perturbo_env
 
-   # Install Perturbo from wheel file
-   pip install perturbo-0.0.1-py3-none-any.whl
-   conda deactivate
-   ```
+# Install from wheel file
+pip install perturbo-0.0.1-py3-none-any.whl
+conda deactivate
+```
+```bash
+# Verify Perturbo installation
+conda activate perturbo_env
+python -c "import perturbo; print(perturbo.__version__)"
+```
 
-   ```bash
-   ## Configure Perturbo's environment path in input.config
-    withName:inference_perturbo {
-        conda = '/path/to/perturbo_env'
-    }
-   ```
+2. Configure environment path in `input.config`:
+```bash
+withName:inference_perturbo {
+    conda = '/path/to/perturbo_env'  # Replace with your actual path
+}
+```
+
+
+
+Would you like me to add troubleshooting steps or common installation issues?
 
 ## Input Requirements
 

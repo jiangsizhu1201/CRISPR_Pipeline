@@ -5,18 +5,21 @@ import pandas as pd
 import numpy as np
 import muon as mu
 from mudata import MuData
-
 import networkx as nx
 import matplotlib.pyplot as plt
-from typing import Optional
+from typing import Optional, Literal
 
-# Function to plot a network
-def plot_network(mdata: MuData, central_node: str, source_column: str = "source",
-                 target_column: str = "target", weight_column: Optional[str] = None, min_weight: Optional[float] = None,
-                 node_size_column: Optional[str] = None, results_key: Optional[str] = "test_results", ax: Optional[plt.Axes] = None):
+def plot_network(mdata: MuData, central_node: str, method: Literal['sceptre', 'perturbo'],
+                source_column: str = "source", target_column: str = "target",
+                min_weight: Optional[float] = None, results_key: Optional[str] = "test_results",
+                ax: Optional[plt.Axes] = None):
     
     if ax is None:
         ax = plt.gca()
+    
+    # Set method-specific column names
+    weight_column = f"{method}_log2_fc"
+    node_size_column = f"{method}_p_value"
     
     results_df = pd.DataFrame({k: v for k, v in mdata.uns[results_key].items()})
     results_df = results_df.drop_duplicates()
@@ -29,87 +32,120 @@ def plot_network(mdata: MuData, central_node: str, source_column: str = "source"
 
     G = nx.DiGraph()
     for i, row in results_df.iterrows():
-        G.add_edge(row[source_column], row[target_column], weight=row[weight_column])
+        G.add_edge(row[source_column], row[target_column],
+                  weight=row[weight_column],
+                  pvalue=row[node_size_column])
     pos = nx.circular_layout(G)
 
-    if node_size_column is not None:
-        node_size = results_df.set_index(target_column)[node_size_column].to_dict()
-        sizes = [node_size.get(n, 10) for n in G.nodes]
-        sizes = [s * 100 for s in sizes]
-        nx.draw(G, pos, with_labels=True, node_color="skyblue", node_size=sizes, edge_cmap=plt.cm.Blues, arrowsize=20)
-    else:
-        nx.draw(G, pos, with_labels=True, node_color="skyblue", node_size=150, edge_cmap=plt.cm.Blues, arrowsize=20)
+    # Calculate node sizes based on -log10(p-value)
+    node_sizes = {}
+    for node in G.nodes():
+        edges = G.in_edges(node, data=True)
+        if edges:
+            min_pvalue = min(d['pvalue'] for _, _, d in edges)
+            node_sizes[node] = -np.log10(min_pvalue) * 100
+        else:
+            node_sizes[node] = 100
+
+    # Draw nodes
+    sizes = [node_sizes.get(n, 100) for n in G.nodes()]
+    nx.draw(G, pos, with_labels=True, node_color="skyblue",
+            node_size=sizes, edge_cmap=plt.cm.coolwarm, arrowsize=20)
 
     label_pos = {k: (v[0]+0.2, v[1] + 0.05) for k, v in pos.items()}
     nx.draw_networkx_labels(G, label_pos, font_size=8)
     
-    edge_labels = {(u, v): f"{d['weight']:.2f}" for u, v, d in G.edges(data=True)}
-    nx.draw_networkx_edges(G, pos, edge_color=[d["weight"] for u, v, d in G.edges(data=True)], edge_cmap=plt.cm.coolwarm, arrowsize=5)
-    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
+    edge_labels = {(u, v): f"FC:{d['weight']:.2f}\np:{d['pvalue']:.2e}"
+                  for u, v, d in G.edges(data=True)}
+    edge_colors = [d["weight"] for u, v, d in G.edges(data=True)]
+    nx.draw_networkx_edges(G, pos, edge_color=edge_colors,
+                          edge_cmap=plt.cm.coolwarm, arrowsize=5)
+    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=6)
+    
+    ax.set_title(f"{method.capitalize()} Network - {central_node}")
 
-# Function to select central nodes based on degree
-def select_central_nodes(mdata: MuData, num_nodes: int, source_column: str, target_column: str, weight_column: Optional[str] = None):
+def select_central_nodes(mdata: MuData, num_nodes: int, source_column: str,
+                        target_column: str, method: Literal['sceptre', 'perturbo']):
+    weight_column = f"{method}_log2_fc"
+    
     results_df = pd.DataFrame({k: v for k, v in mdata.uns["test_results"].items()})
     results_df = results_df.drop_duplicates()
+    
     # Create a graph and calculate the degree of each node
     G = nx.DiGraph()
     for i, row in results_df.iterrows():
-        G.add_edge(row[source_column], row[target_column], weight=row.get(weight_column, 1))
+        if pd.notna(row.get(weight_column)):  # Only add edges if weight exists
+            G.add_edge(row[source_column], row[target_column], weight=abs(row[weight_column]))
     
-    # Sort nodes by degree and select the top num_nodes
-    degrees = dict(G.degree(weight=weight_column))
+    # Sort nodes by weighted degree
+    degrees = dict(G.degree(weight='weight'))
     sorted_nodes = sorted(degrees, key=degrees.get, reverse=True)
 
     intended_target_names = set(results_df['intended_target_name'])
     filtered_nodes = [node for node in sorted_nodes if node in intended_target_names]
-    print(filtered_nodes[:num_nodes])
+    print(f"Top {num_nodes} nodes for {method}:", filtered_nodes[:num_nodes])
     return filtered_nodes[:num_nodes]
 
-# Main function
 def main():
-    parser = argparse.ArgumentParser(description="Select nodes and plot a network from MuData")
+    parser = argparse.ArgumentParser(description="Select nodes and plot networks comparing two analysis methods")
     parser.add_argument("mdata_path", type=str, help="Path to the MuData file")
     parser.add_argument("--num_nodes", type=int, required=True, help="Number of central nodes to select")
-    parser.add_argument("--source_column", type=str, default="intended_target_name", help="Source column name in test results")
-    parser.add_argument("--target_column", type=str, default="gene_id", help="Target column name in test results")
-    parser.add_argument("--weight_column", type=str, default="log2_fc", help="Weight column name in test results")
-    parser.add_argument("--min_weight", type=float, default=0.1, help="Minimum weight to filter edges")
-    parser.add_argument("--node_size_column", type=str, default="p_value", help="Column to determine node size")
-    parser.add_argument("--results_key", type=str, default="test_results", help="Key for test results in mdata.uns")
+    parser.add_argument("--source_column", type=str, default="intended_target_name",
+                      help="Source column name in test results")
+    parser.add_argument("--target_column", type=str, default="gene_id",
+                      help="Target column name in test results")
+    parser.add_argument("--min_weight", type=float, default=0.1,
+                      help="Minimum absolute log2 fold change to filter edges")
+    parser.add_argument("--results_key", type=str, default="test_results",
+                      help="Key for test results in mdata.uns")
     
     args = parser.parse_args()
     
     # Load MuData
     mdata = mu.read(args.mdata_path)
 
-    # Select central nodes
-    central_nodes = select_central_nodes(
-        mdata,
-        num_nodes=args.num_nodes,
-        source_column=args.source_column,
-        target_column=args.target_column,
-        weight_column=args.weight_column
-    )
+    # Select central nodes for both methods
+    sceptre_nodes = set(select_central_nodes(
+        mdata, args.num_nodes, args.source_column, args.target_column, 'sceptre'
+    ))
+    perturbo_nodes = set(select_central_nodes(
+        mdata, args.num_nodes, args.source_column, args.target_column, 'perturbo'
+    ))
+    
+    # Union of top nodes from both methods
+    central_nodes = list(sceptre_nodes | perturbo_nodes)
+    print(f"\nTotal unique nodes selected: {len(central_nodes)}")
 
     # Create a grid of plots
-    cols = 2  
-    rows = (len(central_nodes) + cols - 1) // cols
-
-    fig = plt.figure(figsize=(15, 7.5 * rows))
+    fig = plt.figure(figsize=(15, 7.5 * len(central_nodes)))
     
     for i, central_node in enumerate(central_nodes):
-        ax = fig.add_subplot(rows, cols, i + 1)
+        # Plot Sceptre
+        ax1 = fig.add_subplot(len(central_nodes), 2, 2*i + 1)
         plot_network(
             mdata,
             central_node=central_node,
+            method='sceptre',
             source_column=args.source_column,
             target_column=args.target_column,
-            weight_column=args.weight_column,
             min_weight=args.min_weight,
-            node_size_column=args.node_size_column,
             results_key=args.results_key,
-            ax=ax
+            ax=ax1
         )
+        
+        # Plot Perturbo
+        ax2 = fig.add_subplot(len(central_nodes), 2, 2*i + 2)
+        plot_network(
+            mdata,
+            central_node=central_node,
+            method='perturbo',
+            source_column=args.source_column,
+            target_column=args.target_column,
+            min_weight=args.min_weight,
+            results_key=args.results_key,
+            ax=ax2
+        )
+
     plt.tight_layout()
 
     # Save the plot

@@ -102,4 +102,13 @@ workflow process_mudata_pipeline_HASHING {
         GuideInference = mergedResults(SceptreResults.test_results, PerturboResults.inference_mudata)
     }
 
+    emit:
+    inference_mudata = GuideInference.inference_mudata
+    gencode_gtf = GTF_Reference.gencode_gtf
+    figures_dir = Preprocessed_AnnData.figures_dir
+    adata_rna = Preprocessed_AnnData.adata_rna
+    filtered_anndata_rna = Preprocessed_AnnData.filtered_anndata_rna
+    adata_guide = MuData.adata_guide
+    adata_hashing = Hashing_Filtered.adata_hashing
+    adata_demux = Hashing_Concat.concatenated_hashing_demux
 }

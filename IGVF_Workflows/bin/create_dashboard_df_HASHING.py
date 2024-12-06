@@ -141,18 +141,20 @@ def create_dashboard_df(guide_fq_tbl, hashing_fq_tbl, mudata_path, gene_ann_path
     ### Create guide inference df
     inference_table = pd.DataFrame({k: v for k, v in mudata.uns['test_results'].items()})
     targets = mudata.mod['guide'].var['intended_target_name'].values
-    target_perturbed_005 = inference_table[inference_table['intended_target_name'].isin(set(targets))& 
-                                    (inference_table['p_value'] < 0.05)]
-    target_perturbed_001 = inference_table[inference_table['intended_target_name'].isin(set(targets))& 
-                                    (inference_table['p_value'] < 0.01)]
-    direct_target_perturbed_005 = target_perturbed_005[target_perturbed_005['pair_type'] == "Direct targeting"]
-    negative_target_perturbed_005 = target_perturbed_005[target_perturbed_005['pair_type'] == "Targeting_negative_control"]
-    gi_highlight = f"Total tested sgRNA-gene pairs: {inference_table.shape[0]}, Total tested significant sgRNA-gene pairs(p_value<0.05): {len(target_perturbed_005)}, Total number of Direct-Targeting pairs presenting significant perturbation effects(p<0.05): {len(direct_target_perturbed_005)}, Percentage of total tested Direct-Targeting pairs presenting significant perturbation effects(p<0.05): {np.round((len(direct_target_perturbed_005)/inference_table.shape[0])*100,2)}%, Total number of Negative pairs presenting significant perturbation effect(p<0.05): {len(negative_target_perturbed_005)}"
-    gi_table_005 = inference_table.copy()
-    gi_table_005['significant'] = gi_table_005['p_value'].apply(lambda x: True if x < 0.05 else False)
+    # target_perturbed_005 = inference_table[inference_table['intended_target_name'].isin(set(targets))& 
+    #                                 (inference_table['p_value'] < 0.05)]
+    # target_perturbed_001 = inference_table[inference_table['intended_target_name'].isin(set(targets))& 
+    #                                 (inference_table['p_value'] < 0.01)]
+    # direct_target_perturbed_005 = target_perturbed_005[target_perturbed_005['pair_type'] == "Direct targeting"]
+    # negative_target_perturbed_005 = target_perturbed_005[target_perturbed_005['pair_type'] == "Targeting_negative_control"]
+    # gi_highlight = f"Total tested sgRNA-gene pairs: {inference_table.shape[0]}, Total tested significant sgRNA-gene pairs(p_value<0.05): {len(target_perturbed_005)}, Total number of Direct-Targeting pairs presenting significant perturbation effects(p<0.05): {len(direct_target_perturbed_005)}, Percentage of total tested Direct-Targeting pairs presenting significant perturbation effects(p<0.05): {np.round((len(direct_target_perturbed_005)/inference_table.shape[0])*100,2)}%, Total number of Negative pairs presenting significant perturbation effect(p<0.05): {len(negative_target_perturbed_005)}"
+    
+    gi_highlight = f"Total tested sgRNA-gene pairs: {inference_table.shape[0]}"
+    # gi_table_005 = inference_table.copy()
+    # gi_table_005['significant'] = gi_table_005['p_value'].apply(lambda x: True if x < 0.05 else False)
 
-    gi_df = new_block('Inference', '', 'Guide Inference', gi_highlight, True, gi_table_005,
-            table_description='Inference table gene, guide, target name, lfc2, p-value, pair-type, significance)')
+    gi_df = new_block('Inference', '', 'Guide Inference', gi_highlight, True, inference_table,
+            table_description='Inference table gene, guide, target name, lfc2, p-value, pair-type)')
 
     ### Create guide assignment df
     positive_calls = guide_assignment_matrix > 0

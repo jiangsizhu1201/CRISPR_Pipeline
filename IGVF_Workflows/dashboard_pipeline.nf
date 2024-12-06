@@ -1,4 +1,3 @@
-
 nextflow.enable.dsl=2
 
 include { createDashboard } from './processes/dashboard.nf' 
