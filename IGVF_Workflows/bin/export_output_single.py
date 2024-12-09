@@ -3,6 +3,7 @@
 import argparse
 import pandas as pd
 import mudata as mu
+import numpy as np
 
 def export_output(mudata, inference_method):
     """
@@ -21,7 +22,12 @@ def export_output(mudata, inference_method):
         .merge(mudata.mod['guide'].var, how='left', on='intended_target_name')
         .assign(
             cell_number=mudata.shape[0],
-            avg_gene_expression=mudata.mod['gene'].X.mean()
+            avg_gene_expression=[
+                np.mean(mudata.mod['gene'].X[:, mudata.mod['gene'].var['symbol'] == target].toarray()) 
+                if (mudata.mod['gene'].var['symbol'] == target).any() 
+                else np.nan
+                for target in pd.DataFrame(mudata.uns['test_results'])['intended_target_name']
+            ]
         )
         .rename(columns=col_map[inference_method])
     )

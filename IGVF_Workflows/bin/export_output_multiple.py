@@ -3,6 +3,7 @@
 import argparse
 import pandas as pd
 import mudata as mu
+import numpy as np 
 
 def merge_results(sceptre_result, perturbo_mudata):
 
@@ -40,7 +41,12 @@ def export_output(merged_result, mudata):
         .merge(mudata.mod['guide'].var, how='left', on='intended_target_name')
         .assign(
             cell_number=mudata.shape[0],
-            avg_gene_expression=mudata.mod['gene'].X.mean()
+            avg_gene_expression=[
+                np.mean(mudata.mod['gene'].X[:, mudata.mod['gene'].var['symbol'] == target].toarray()) 
+                if (mudata.mod['gene'].var['symbol'] == target).any() 
+                else np.nan
+                for target in merged_result['intended_target_name']
+            ]
         )
         .rename(columns={'guide_id_x': 'guide_id(s)'})
         .reindex(columns=[
@@ -50,7 +56,6 @@ def export_output(merged_result, mudata):
             'perturbo_p_value', 'cell_number', 'avg_gene_expression'
         ])
     )
-
     # Generate per-element output
     per_element_output = (
         per_guide_output.groupby('intended_target_name', as_index=False)
